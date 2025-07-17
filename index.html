@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yunluo Image Host</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        :root {
+            --theme-accent-color: #3f51b5;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px 15px;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            box-sizing: border-box;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        h1 {
+            color: var(--theme-accent-color);
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        #imageUpload {
+            display: none;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 25px 15px;
+            margin: 15px 0;
+            background-color: #fcfcfc;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .upload-area.dragover {
+            background-color: #eef7ff;
+            border-color: var(--theme-accent-color);
+        }
+        .upload-area-icon {
+            font-size: 50px;
+            color: #aaa;
+            transition: color 0.2s ease;
+        }
+        .upload-area.dragover .upload-area-icon {
+            color: var(--theme-accent-color);
+        }
+
+        .mdui-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            line-height: 48px;
+            font-size: 16px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+            padding: 0 18px;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 280px;
+            margin: 10px auto;
+        }
+
+        .mdui-btn .material-icons {
+            font-size: 22px;
+            margin-right: 8px;
+        }
+
+        #uploadButton:disabled {
+            background-color: #a5d8a9 !important;
+            cursor: not-allowed;
+            opacity: 0.8;
+            box-shadow: none;
+        }
+
+        .upload-tip {
+            font-size: 13px;
+            color: #777;
+            line-height: 1.5;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #uploadProgressContainer {
+            margin: 15px 0;
+            display: none;
+        }
+        .mdui-progress-determinate::-webkit-progress-bar {
+            background-color: #e0e0e0;
+        }
+        .mdui-progress-determinate::-webkit-progress-value {
+            background-color: var(--theme-accent-color);
+        }
+
+
+        #statusMessage {
+            margin-top: 15px;
+            font-size: 15px;
+            min-height: 22px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            max-height: 150px;
+            margin: 15px auto;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            display: block;
+            object-fit: contain;
+        }
+
+        .result-area {
+            margin-top: 25px;
+            background-color: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: left;
+            display: none;
+            word-break: break-all;
+        }
+        .result-area p {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: #555;
+        }
+        #resultUrl {
+            background-color: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 14px;
+            color: #0056b3;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: block;
+        }
+        #copyUrlButton {
+            margin-top: 15px;
+            max-width: 180px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+
+        .history-area {
+            margin-top: 35px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            text-align: center;
+        }
+        .history-area h2 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        #historyList {
+            padding-left: 0;
+            list-style: none;
+            text-align: left;
+        }
+        .history-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background-color: #fbfbfb;
+            border-radius: 8px;
+            font-size: 13px;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+        .history-item-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-right: 12px;
+            flex-shrink: 0;
+            background-color: #eee;
+        }
+        .history-item-info {
+            flex-grow: 1;
+            margin-right: 10px;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .history-item-info span { color: #333; }
+        .history-item .delete-button {
+            height: 32px;
+            width: 32px;
+            min-width: 32px;
+            padding: 0;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .history-item .delete-button .material-icons {
+            margin: 0;
+            font-size: 18px;
+        }
+
+
+        /* Removed yiyan-area as it's specific to Chinese quotes */
+
+        .footer-contact { margin-top: 35px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; }
+        .footer-contact a { color: #007bff; text-decoration: none; }
+
+
+        .theme-toggle-button { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: var(--theme-accent-color); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1000; }
+        .theme-toggle-button:hover { background-color: #303f9f; }
+        .theme-toggle-button .material-icons { font-size: 28px; margin: 0; }
+
+        /* --- Dark Mode --- */
+        body.dark-mode { background-color: #212121; color: #eee; }
+        body.dark-mode .container { background-color: #303030; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4); }
+        body.dark-mode h1, body.dark-mode h2 { color: #eeeeee; }
+        body.dark-mode .upload-tip, body.dark-mode .footer-contact { color: #b0b0b0; }
+        body.dark-mode .upload-area { background-color: #2a2a2a; border-color: #555; }
+        body.dark-mode .upload-area.dragover { background-color: #3a3a3a; border-color: #90caf9;}
+        body.dark-mode .upload-area-icon { color: #666; }
+        body.dark-mode .upload-area.dragover .upload-area-icon { color: #90caf9; }
+        body.dark-mode .mdui-progress-determinate::-webkit-progress-bar { background-color: #555; }
+        body.dark-mode .result-area { background-color: #424242; border-color: #555; }
+        body.dark-mode .result-area p { color: #ccc; }
+        body.dark-mode #resultUrl { background-color: #3a3a3a; border-color: #555; color: #90caf9; }
+        body.dark-mode .history-item { background-color: #424242; }
+        body.dark-mode .history-item-thumb { background-color: #555; }
+        body.dark-mode .history-item-info span { color: #ddd; }
+        body.dark-mode .theme-toggle-button { background-color: #9e9e9e; }
+
+        @media (max-width: 480px) {
+            .container { padding: 15px 10px; }
+            h1 { font-size: 24px; }
+            .mdui-btn { height: 44px; line-height: 44px; font-size: 15px; }
+            .history-item-thumb { width: 35px; height: 35px; margin-right: 10px;}
+        }
+    </style>
+</head>
+<body class="mdui-theme-primary-indigo mdui-theme-accent-blue">
+    <div class="container mdui-shadow-2">
+        <h1>Yunluo Image Host</h1>
+
+        <div class="mdui-select-container">
+            <select id="apiSelector" class="mdui-select" mdui-select>
+                <option value="main">Main API (360 Image Bed)</option>
+                <option value="backup">Backup API (Jingdong Image Bed)</option>
+                <option value="sogou">Sogou Image Bed (Requires meta tag)</option>
+                <option value="picgo">PicGo Image Host (Chevereto)</option>
+            </select>
+        </div>
+        <p class="upload-tip mdui-text-color-grey-600">APIs may be unstable; try switching if uploads fail.</p>
+
+        <div id="uploadArea" class="upload-area">
+            <i class="material-icons upload-area-icon">cloud_upload</i>
+            <p class="upload-tip">Drag & drop your image here, or</p>
+            <label for="imageUpload" class="custom-file-upload mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
+                <i class="material-icons">add_photo_alternate</i>Select Image
+            </label>
+        </div>
+        <input type="file" id="imageUpload" accept="image/*">
+        <p class="upload-tip mdui-text-color-grey-600">Main, Jingdong, Sogou Image Beds: up to 5MB per image. PicGo Image Host: up to 25MB. No compression.</p>
+
+        <img id="imagePreview" src="" alt="Image Preview" style="display: none;">
+
+        <button id="uploadButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-green" disabled>
+            <i class="material-icons">backup</i>Start Upload
+        </button>
+
+        <div id="uploadProgressContainer">
+            <div class="mdui-progress">
+                <div class="mdui-progress-determinate" id="uploadProgressBar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <p id="statusMessage" class="mdui-text-color-theme"></p>
+
+        <div id="resultArea" class="result-area">
+            <p>Image Link:</p>
+            <span id="resultUrl"></span>
+            <button id="copyUrlButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
+                <i class="material-icons">content_copy</i>Copy Link
+            </button>
+        </div>
+
+        <div class="history-area">
+            <h2 class="mdui-text-color-theme">Upload History</h2>
+            <ul id="historyList" class="mdui-list"></ul>
+            <button id="clearHistoryButton" class="mdui-btn mdui-btn-raised mdui-ripple">
+                <i class="material-icons">delete_sweep</i>Clear All History
+            </button>
+        </div>
+
+        <div class="footer-contact mdui-text-color-grey-700">
+            <p>Contact: <a href="mailto:jiayuxuan_2024@qq.com" class="mdui-text-color-blue">jiayuxuan_2024@qq.com</a></p>
+            <p>This site is for learning and communication purposes only.</p>
+            </div>
+    </div>
+
+    <div class="theme-toggle-button mdui-ripple" id="themeToggleButton">
+        <i class="material-icons">brightness_2</i>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/js/mdui.min.js"></script>
+    <script>
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const imageUpload = document.getElementById('imageUpload');
+        const apiSelector = document.getElementById('apiSelector');
+        const uploadButton = document.getElementById('uploadButton');
+        const statusMessage = document.getElementById('statusMessage');
+        const imagePreview = document.getElementById('imagePreview');
+        const progressContainer = document.getElementById('uploadProgressContainer');
+        const progressBar = document.getElementById('uploadProgressBar');
+        const resultArea = document.getElementById('resultArea');
+        const resultUrl = document.getElementById('resultUrl');
+        const copyUrlButton = document.getElementById('copyUrlButton');
+        // const yiyanContent = document.getElementById('yiyanContent'); // Removed
+        // const refreshYiyanButton = document.getElementById('refreshYiyanButton'); // Removed
+        const historyList = document.getElementById('historyList');
+        const clearHistoryButton = document.getElementById('clearHistoryButton');
+        const themeToggleButton = document.getElementById('themeToggleButton');
+
+        // Constants
+        const localStorageKey = 'yunluo_image_upload_history_v2';
+        const MAX_HISTORY_ITEMS = 15;
+        const THEME_KEY = 'yunluo_theme_mode';
+
+        // Define max file size for different APIs
+        const MAX_FILE_SIZE = {
+            main: 5 * 1024 * 1024,   // 5MB
+            backup: 5 * 1024 * 1024, // 5MB
+            sogou: 5 * 1024 * 1024,  // 5MB
+            picgo: 25 * 1024 * 1024  // 25MB
+        };
+
+        // PicGo API Key
+        const PICGO_API_KEY = 'chv_SGDFr_6ff30575b071a65ce5aa95839e3080899543deb7d507ef74e55e46d13fc4307d01849df53b0519c3a4defaf26591f7d228b2a13184aa136f7417db379bd5ce35';
+
+        // API Endpoints
+        const API_ENDPOINTS = {
+            main: 'https://api.xinyew.cn/api/360tc',
+            backup: 'https://api.xinyew.cn/api/jdtc',
+            sogou: 'https://api.xinyew.cn/api/sogotc',
+            picgo: 'https://www.picgo.net/api/1/upload'
+        };
+
+        let selectedFile = null;
+        let sogouMetaTag = null; // Used to store Sogou Image Bed's meta tag
+
+        // --- Utility Functions ---
+        function showSnackbar(message) {
+            mdui.snackbar({ message, timeout: 2500, position: 'top' });
+        }
+
+        async function copyToClipboard(text, successMessage) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showSnackbar(successMessage);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                showSnackbar('Copy failed, please copy manually.');
+            }
+        }
+
+        function addSogouMetaTag(metaHtml) {
+            if (sogouMetaTag) {
+                sogouMetaTag.remove(); // Remove old meta tag
+            }
+            if (metaHtml) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = metaHtml;
+                sogouMetaTag = tempDiv.firstChild;
+                document.head.appendChild(sogouMetaTag);
+            }
+        }
+
+        function removeSogouMetaTag() {
+            if (sogouMetaTag) {
+                sogouMetaTag.remove();
+                sogouMetaTag = null;
+            }
+        }
+
+        // --- File Handling and Preview ---
+        function handleFileSelect(file) {
+            if (!file) return;
+
+            const selectedApi = apiSelector.value;
+            const currentMaxFileSize = MAX_FILE_SIZE[selectedApi] || MAX_FILE_SIZE.main; // Default to main if not found
+
+            if (file.size > currentMaxFileSize) {
+                const maxMb = currentMaxFileSize / (1024 * 1024);
+                statusMessage.textContent = `Image size exceeds ${maxMb}MB, please select another one!`;
+                statusMessage.style.color = 'red';
+                selectedFile = null;
+                uploadButton.disabled = true;
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            selectedFile = file;
+            statusMessage.textContent = `Selected: ${selectedFile.name}`;
+            statusMessage.style.color = 'var(--theme-accent-color)';
+            uploadButton.disabled = false;
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(selectedFile);
+            resultArea.style.display = 'none';
+        }
+
+        // --- History Management ---
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+            renderHistory(history);
+        }
+
+        function renderHistory(history) {
+            historyList.innerHTML = '';
+            clearHistoryButton.style.display = history.length > 0 ? 'flex' : 'none';
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<li class="mdui-list-item mdui-text-color-grey-600" style="text-align: center; justify-content: center;">No upload history yet.</li>';
+                return;
+            }
+
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item mdui-ripple';
+                li.innerHTML = `
+                    <img src="${item.url}" alt="thumbnail" class="history-item-thumb" loading="lazy">
+                    <div class="history-item-info" data-url="${item.url}">
+                        <span>${item.name}</span>
+                    </div>
+                    <button class="delete-button mdui-btn mdui-btn-icon mdui-color-red-accent" data-url="${item.url}" data-name="${item.name}">
+                        <i class="material-icons">delete</i>
+                    </button>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+
+        function addHistoryItem(name, url) {
+            let history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+            history = history.filter(item => item.url !== url);
+            history.unshift({ name, url, timestamp: Date.now() });
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history = history.slice(0, MAX_HISTORY_ITEMS);
+            }
+            localStorage.setItem(localStorageKey, JSON.stringify(history));
+            loadHistory();
+        }
+
+        function deleteHistoryItem(urlToDelete) {
+            let history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+            history = history.filter(item => item.url !== urlToDelete);
+            localStorage.setItem(localStorageKey, JSON.stringify(history));
+            loadHistory();
+            showSnackbar('History item deleted.');
+        }
+
+        function clearAllHistory() {
+            mdui.dialog({
+                title: 'Confirm Clear',
+                content: 'Are you sure you want to clear all upload history? This action cannot be undone.',
+                buttons: [
+                    { text: 'Cancel' },
+                    {
+                        text: 'Confirm',
+                        onClick: () => {
+                            localStorage.removeItem(localStorageKey);
+                            loadHistory();
+                            showSnackbar('All history cleared.');
+                        }
+                    }
+                ]
+            });
+        }
+
+        // --- API Calls ---
+        function uploadFile() {
+            if (!selectedFile) {
+                showSnackbar('Please select an image file first!');
+                return;
+            }
+
+            statusMessage.textContent = 'Preparing to upload...';
+            statusMessage.style.color = 'var(--theme-accent-color)';
+            uploadButton.disabled = true;
+            resultArea.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            const formData = new FormData();
+            const selectedApi = apiSelector.value;
+
+            const originalFileName = selectedFile.name;
+            const fileExtension = originalFileName.split('.').pop();
+            const fileNameWithoutExt = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
+
+            let uploadFileName = originalFileName;
+
+            // Apply specific file parameter names and unique filenames where necessary
+            if (selectedApi === 'picgo') {
+                const timestamp = new Date().getTime();
+                uploadFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`;
+                formData.append('source', selectedFile, uploadFileName);
+            } else {
+                formData.append('file', selectedFile, uploadFileName);
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', API_ENDPOINTS[selectedApi], true);
+
+            // Add authorization header for PicGo API
+            if (selectedApi === 'picgo') {
+                xhr.setRequestHeader('X-API-Key', PICGO_API_KEY);
+            }
+
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    statusMessage.textContent = `Uploading... ${Math.round(percentComplete)}%`;
+                }
+            };
+
+            xhr.onload = () => {
+                uploadButton.disabled = false;
+                progressContainer.style.display = 'none';
+                removeSogouMetaTag(); // Remove possible meta tag after upload completes
+
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        let success = false;
+                        let uploadedUrl = '';
+                        let errorMessage = 'API returned unknown error';
+
+                        // Handle different API responses
+                        if (selectedApi === 'picgo') {
+                            if (data.status_code === 200 && data.image && data.image.url) {
+                                success = true;
+                                uploadedUrl = data.image.url;
+                            } else {
+                                errorMessage = data.error?.message || `PicGo API Error: ${JSON.stringify(data)}`;
+                                console.error('PicGo API response error:', data);
+                            }
+                        } else if (selectedApi === 'sogou') {
+                            if (data.errno === 0 && data.data && data.data.url) {
+                                success = true;
+                                uploadedUrl = data.data.url;
+                                if (data.meta) {
+                                    addSogouMetaTag(data.meta);
+                                }
+                            } else {
+                                errorMessage = data.error || data.message || `Sogou Image Bed API Error: ${JSON.stringify(data)}`;
+                                console.error('Sogou Image Bed API response error:', data);
+                            }
+                        } else { // Main (360) and Backup (Jingdong) APIs
+                            if (data.errno === 0 && data.data.url) {
+                                success = true;
+                                uploadedUrl = data.data.url;
+                            } else {
+                                errorMessage = data.error || data.message || `Generic API Error: ${JSON.stringify(data)}`;
+                                console.error('Generic API response error:', data);
+                            }
+                        }
+
+                        if (success) {
+                            statusMessage.textContent = 'Upload successful!';
+                            statusMessage.style.color = '#4CAF50';
+                            resultUrl.textContent = uploadedUrl;
+                            resultArea.style.display = 'block';
+                            addHistoryItem(originalFileName, uploadedUrl);
+                        } else {
+                           throw new Error(errorMessage);
+                        }
+
+                    } catch (e) {
+                        statusMessage.textContent = `Upload failed: ${e.message}`;
+                        statusMessage.style.color = 'red';
+                        console.error('JSON parse or processing error:', e);
+                    }
+                } else {
+                    statusMessage.textContent = `Upload failed: HTTP ${xhr.status} error (${xhr.statusText || 'Unknown error'})`;
+                    statusMessage.style.color = 'red';
+                    console.error(`HTTP error: ${xhr.status}`, xhr.responseText);
+                }
+            };
+
+            xhr.onerror = () => {
+                uploadButton.disabled = false;
+                progressContainer.style.display = 'none';
+                statusMessage.textContent = 'Upload failed, please check your network connection.';
+                statusMessage.style.color = 'red';
+                console.error('Network request error.');
+                removeSogouMetaTag(); // Remove possible meta tag
+            };
+
+            xhr.send(formData);
+        }
+
+        // Removed fetchYiyan function as the section is removed
+
+        // --- Theme Management ---
+        function applyTheme(mode) {
+            const body = document.body;
+            const toggleIcon = themeToggleButton.querySelector('.material-icons');
+            if (mode === 'dark') {
+                body.classList.add('dark-mode');
+                toggleIcon.textContent = 'wb_sunny';
+            } else {
+                body.classList.remove('dark-mode');
+                toggleIcon.textContent = 'brightness_2';
+            }
+            localStorage.setItem(THEME_KEY, mode);
+        }
+
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem(THEME_KEY) || 'light';
+            applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            imageUpload.addEventListener('change', e => handleFileSelect(e.target.files[0]));
+            uploadButton.addEventListener('click', uploadFile);
+            // refreshYiyanButton.addEventListener('click', fetchYiyan); // Removed
+            clearHistoryButton.addEventListener('click', clearAllHistory);
+            themeToggleButton.addEventListener('click', toggleTheme);
+
+            copyUrlButton.addEventListener('click', () => {
+                const textToCopy = resultUrl.textContent;
+                if (textToCopy) {
+                    copyToClipboard(textToCopy, 'Image URL copied!');
+                }
+            });
+
+            // Drag and Drop listeners
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+            });
+            uploadArea.addEventListener('drop', e => handleFileSelect(e.dataTransfer.files[0]));
+
+            // Delegated event listeners for history items
+            historyList.addEventListener('click', e => {
+                const historyItem = e.target.closest('.history-item');
+                if (!historyItem) return;
+
+                const deleteBtn = e.target.closest('.delete-button');
+                if (deleteBtn) {
+                    const url = deleteBtn.dataset.url;
+                    const name = deleteBtn.dataset.name;
+                    mdui.dialog({
+                        title: 'Confirm Delete',
+                        content: `Are you sure you want to delete "${name}" from history?`,
+                        buttons: [{ text: 'Cancel' }, { text: 'Confirm', onClick: () => deleteHistoryItem(url) }]
+                    });
+                } else {
+                    const url = historyItem.querySelector('.history-item-info').dataset.url;
+                    copyToClipboard(url, 'History image link copied!');
+                }
+            });
+
+            // When API selection changes, re-check file size limit and remove Sogou meta tag
+            apiSelector.addEventListener('change', () => {
+                if (selectedFile) { // If a file is already selected, re-validate size
+                    handleFileSelect(selectedFile);
+                }
+                removeSogouMetaTag(); // Remove any existing Sogou meta tag upon API switch
+            });
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            applyTheme(savedTheme || 'light');
+            // Removed fetchYiyan();
+            loadHistory();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>
